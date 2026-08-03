@@ -98,6 +98,21 @@ npm run dev
 
 ---
 
+## Keeping the frontend in sync
+
+The frontend is authored in [Lovable](https://lovable.dev) and lives in its own repo; this monorepo keeps a mirror under `frontend/`. **Edit the UI in Lovable, not here**, then pull the latest snapshot in with a single command:
+
+```bash
+# from the monorepo root
+scripts/sync-frontend.sh                       # clone the remote (uses your GitHub auth)
+# or mirror an existing local clone (no auth needed):
+scripts/sync-frontend.sh ../future-wealth-sim
+```
+
+Each sync is one commit authored by you, so the integration history stays under your name.
+
+---
+
 ## Author
 
 Built by **Israel Adeboga** — exploring quantitative finance, stochastic modeling, and full-stack engineering.
