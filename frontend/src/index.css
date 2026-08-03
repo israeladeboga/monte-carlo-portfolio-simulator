@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Premium Fintech Design System */
+
+@layer base {
+  :root {
+    /* Light theme backgrounds */
+    --background: 0 0% 100%;
+    --foreground: 220 40% 13%;
+
+    /* Card and surface colors */
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 13%;
+    --card-secondary: 210 20% 98%;
+
+    /* Popover styling */
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 40% 13%;
+
+    /* Professional finance colors */
+    --primary: 224 68% 33%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 224 68% 95%;
+
+    /* Success/positive colors (emerald green) */
+    --secondary: 158 84% 39%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-light: 158 84% 95%;
+
+    /* Neutral backgrounds */
+    --muted: 210 20% 98%;
+    --muted-foreground: 220 20% 50%;
+
+    /* Accent colors (emerald for highlights) */
+    --accent: 158 84% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Warning/alert colors (orange) */
+    --warning: 24 95% 53%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 24 95% 95%;
+
+    /* Destructive colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border and input styling */
+    --border: 210 20% 90%;
+    --input: 210 20% 96%;
+    --ring: 224 68% 33%;
+
+    /* Premium gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(224, 68%, 33%), hsl(224, 68%, 40%));
+    --gradient-success: linear-gradient(135deg, hsl(158, 84%, 39%), hsl(158, 84%, 45%));
+    --gradient-surface: linear-gradient(180deg, hsl(0, 0%, 100%), hsl(210, 20%, 99%));
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+
+    /* Shadows for depth */
+    --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.15);
+
+    /* Professional spacing scale */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* We're focusing on light theme for the professional fintech look */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* Typography enhancements */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  /* Premium glass effect utilities */
+  .glass-nav {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .premium-card {
+    background: var(--gradient-surface);
+    box-shadow: var(--shadow-medium);
+    border: 1px solid hsl(var(--border));
+  }
+
+  .chart-container {
+    background: hsl(var(--card));
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+  }
+}
