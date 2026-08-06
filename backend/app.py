@@ -206,6 +206,20 @@ def simulate_portfolio(age, retirement_age, savings, contribution,
         }
     }
 
+# API index so the base URL returns something useful instead of a 404
+@app.route('/', methods=['GET'])
+def index():
+    """Root endpoint: brief API description and available routes."""
+    return jsonify({
+        "service": "monte-carlo-portfolio-simulator",
+        "description": "Monte Carlo portfolio simulation API",
+        "endpoints": {
+            "GET /health": "service health check",
+            "POST /simulate": "run a simulation (JSON body; see the repo README for parameters)"
+        }
+    }), 200
+
+
 # Health check endpoint for load balancers and monitoring
 @app.route('/health', methods=['GET'])
 def health_check():
