@@ -35,7 +35,8 @@ def simulate_portfolio(age, retirement_age, savings, contribution,
                        stock_allocation=0.6, bond_allocation=0.3, cash_allocation=0.1,
                        stock_return=0.08, stock_vol=0.15, bond_return=0.04, bond_vol=0.08,
                        cash_return=0.02, cash_vol=0.01, correlation_stock_bond=0.3,
-                       contribution_growth_rate=0.03, withdrawal_rate=0.04, retirement_duration=30):
+                       contribution_growth_rate=0.03, withdrawal_rate=0.04, retirement_duration=30,
+                       seed=None):
     """
     Simulate a retirement portfolio using a vectorized Monte Carlo method.
 
@@ -77,6 +78,7 @@ def simulate_portfolio(age, retirement_age, savings, contribution,
     - withdrawal_rate: First-year withdrawal as a fraction of the retirement
       balance; the 4% rule (default: 4%)
     - retirement_duration: Years to simulate post-retirement (default: 30)
+    - seed: Optional integer seed for a reproducible random stream (default: None)
 
     Returns:
     Dictionary with summary statistics from all simulations.
@@ -88,13 +90,17 @@ def simulate_portfolio(age, retirement_age, savings, contribution,
     contribution = float(contribution)
     n_simulations = int(n_simulations)
     retirement_duration = int(retirement_duration)
+    seed = int(seed) if seed is not None else None
+
+    # Modern NumPy random Generator (PCG64). Passing a seed makes runs reproducible.
+    rng = np.random.default_rng(seed)
 
     # Calculate total simulation years (accumulation + retirement phases)
     accumulation_years = retirement_age - age
     total_years = accumulation_years + retirement_duration
 
-    # Prepare multi-asset return parameters for lognormal distribution.
-    # For lognormal returns the log-space mean is drift = expected_return - vol^2/2.
+    # Geometric Brownian Motion drift in log space: E[log return] = mu - sigma^2/2.
+    # With an annual step (dt = 1) the GBM increment is drift + sigma * sqrt(dt) * Z.
     drift = np.array([
         stock_return - stock_vol ** 2 / 2,
         bond_return - bond_vol ** 2 / 2,
@@ -110,21 +116,29 @@ def simulate_portfolio(age, retirement_age, savings, contribution,
     ])
     cov_matrix = np.outer(vols, vols) * corr_matrix
 
+    # Cholesky factor L (cov = L @ L.T) turns independent standard normals into
+    # correlated ones: if Z ~ N(0, I) then Z @ L.T ~ N(0, cov). A tiny jitter keeps
+    # the factorization stable at extreme correlations (near-singular covariance).
+    try:
+        chol_lower = np.linalg.cholesky(cov_matrix)
+    except np.linalg.LinAlgError:
+        chol_lower = np.linalg.cholesky(cov_matrix + 1e-12 * np.eye(3))
+
     # Portfolio allocation weights, applied to the per-asset log returns
     weights = np.array([stock_allocation, bond_allocation, cash_allocation])
 
     # --- Pre-sample every random draw at once (vectorized across simulations) ---
-    # Correlated asset log returns, shape (n_simulations, total_years, 3)
-    asset_log_returns = np.random.multivariate_normal(
-        drift, cov_matrix, size=(n_simulations, total_years)
-    )
+    # Independent standard normals, shape (n_simulations, total_years, 3)
+    z = rng.standard_normal((n_simulations, total_years, 3))
+    # Correlated GBM log returns = drift + correlated Gaussian shock (via Cholesky)
+    asset_log_returns = drift + z @ chol_lower.T
     # Allocation-weighted portfolio log return per year, shape (n_simulations, total_years)
     portfolio_log_returns = asset_log_returns @ weights
-    # Multiplicative growth factor per year
+    # Multiplicative GBM growth factor per year: S_{t+1} = S_t * exp(log return)
     growth_factors = np.exp(portfolio_log_returns)
 
     # Stochastic annual inflation, used to index retirement withdrawals
-    inflation = np.random.normal(inflation_rate, inflation_vol, size=(n_simulations, total_years))
+    inflation = inflation_rate + inflation_vol * rng.standard_normal((n_simulations, total_years))
 
     # --- Per-simulation state (one entry per scenario) ---
     wealth = np.full(n_simulations, savings, dtype=float)
@@ -284,6 +298,10 @@ def validate_input(data):
                 return False, (f"retirement_duration must be between "
                                f"{MIN_RETIREMENT_DURATION} and {MAX_RETIREMENT_DURATION}")
 
+        # Optional reproducibility seed must be integer-like if provided
+        if data.get('seed') is not None:
+            int(data['seed'])
+
         return True, None
 
     except (ValueError, TypeError) as e:
@@ -342,7 +360,8 @@ def simulate():
             correlation_stock_bond=data.get('correlation_stock_bond', 0.3),
             contribution_growth_rate=data.get('contribution_growth_rate', 0.03),
             withdrawal_rate=data.get('withdrawal_rate', 0.04),
-            retirement_duration=data.get('retirement_duration', 30)
+            retirement_duration=data.get('retirement_duration', 30),
+            seed=data.get('seed')
         )
 
         # Return simulation results as JSON response
